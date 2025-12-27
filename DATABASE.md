@@ -47,15 +47,15 @@ export default defineEventHandler(async () => {
 
 #### 使用 Prisma
 ```typescript
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '~/server/utils/prisma'
 
 export default defineEventHandler(async () => {
   const users = await prisma.user.findMany()
   return users
 })
 ```
+
+**注意**: 使用 `~/server/utils/prisma` 中的 singleton 实例，避免每次创建新的 PrismaClient 导致连接池耗尽。
 
 ## 重要提示
 
