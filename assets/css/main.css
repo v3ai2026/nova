@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer utilities {
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+  
   .glass {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
@@ -64,6 +68,20 @@
   }
 }
 
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-blue-500/50 rounded-full hover:bg-blue-500/70;
+}
+
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
@@ -101,15 +119,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.hover-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
 .shimmer {
