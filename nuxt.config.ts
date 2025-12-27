@@ -5,6 +5,16 @@ export default defineNuxtConfig({
     redirect: false
   },
   
+  runtimeConfig: {
+    // 私有配置（仅服务端可用）
+    databaseUrl: process.env.DATABASE_URL,
+    postgresUrl: process.env.POSTGRES_URL,
+    // 公开配置（客户端也可访问）
+    public: {
+      apiBase: '/api'
+    }
+  },
+  
   css: ['~/assets/css/main.css'],
   
   app: {
