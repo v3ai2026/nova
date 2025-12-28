@@ -79,6 +79,6 @@ export interface Notification {
   type: 'success' | 'error' | 'warning' | 'info'
   title: string
   message?: string
-  read?: boolean
-  created_at?: string
+  read: boolean
+  created_at: string
 }

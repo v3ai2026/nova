@@ -1,6 +1,7 @@
 import { getAuthenticatedUser } from '~/server/utils/auth'
 import { prisma } from '~/server/utils/prisma'
 import { createError } from 'h3'
+import { randomBytes } from 'crypto'
 
 export default defineEventHandler(async (event) => {
   const user = await getAuthenticatedUser(event)
@@ -13,8 +14,8 @@ export default defineEventHandler(async (event) => {
     })
   }
   
-  // Generate token
-  const tokenValue = `dh_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`
+  // Generate cryptographically secure token
+  const tokenValue = `dh_${randomBytes(32).toString('base64url')}`
   
   // Calculate expiration
   let expiresAt: Date | null = null

@@ -33,8 +33,10 @@ export default defineEventHandler(async (event) => {
     })
   }
   
-  // In a real implementation, you would verify against the blockchain here
-  // For now, just mark as verified
+  // NOTE: In production, this should verify against actual blockchain
+  // For development/testing, we mark as verified without actual on-chain verification
+  // TODO: Implement actual blockchain verification using ethers.js or web3.js
+  // Example: const tx = await provider.getTransaction(txHash)
   const updated = await prisma.chainRecord.update({
     where: { txHash },
     data: { verified: true }

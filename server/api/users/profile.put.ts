@@ -6,10 +6,11 @@ export default defineEventHandler(async (event) => {
   const user = await getAuthenticatedUser(event)
   const body = await readBody(event)
   
-  if (!body.name && !body.email) {
+  // Validate that at least one updateable field is provided
+  if (!body.name && !body.bio && !body.location && !body.website && !body.avatarUrl && !body.avatar_url) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'At least one field must be provided'
+      statusMessage: 'At least one field (name, bio, location, website, avatarUrl) must be provided'
     })
   }
   

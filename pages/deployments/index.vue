@@ -42,7 +42,7 @@
         :key="deployment.id"
         hover
         class="cursor-pointer"
-        @click="navigateTo(`/projects/${deployment.project_id}/deployments/${deployment.id}`)"
+        @click="navigateTo(`/projects/${deployment.project?.id || deployment.project_id}/deployments/${deployment.id}`)"
       >
         <div class="flex items-center justify-between">
           <div class="flex-1">
