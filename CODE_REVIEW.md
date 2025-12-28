@@ -65,7 +65,7 @@ Code Review 不仅仅是找 Bug，更重要的是：
 - **注释规范**: 何时写注释、如何写注释
 - **安全规范**: 输入验证、数据转义、权限检查
 
-📝 **示例**: 本项目使用 [ESLint](/.eslintrc.js) 和 [Prettier](/.prettierrc) 自动化代码风格检查。
+📝 **示例**: 本项目使用 [ESLint](/.eslintrc.cjs) 和 [Prettier](/.prettierrc) 自动化代码风格检查。
 
 ### 2. 制定检视 Checklist
 
@@ -1014,7 +1014,7 @@ npm run lint
 npm run lint:fix
 ```
 
-配置文件：[.eslintrc.js](/.eslintrc.js)
+配置文件：[.eslintrc.cjs](/.eslintrc.cjs)
 
 #### Prettier
 ```bash
@@ -1049,7 +1049,7 @@ npm run prepare
 
 配置文件：
 - [.husky/pre-commit](/.husky/pre-commit)
-- [.lintstagedrc.js](/.lintstagedrc.js)
+- [.lintstagedrc.cjs](/.lintstagedrc.cjs)
 
 #### Vitest
 
