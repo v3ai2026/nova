@@ -130,51 +130,36 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const stats = ref({
-  totalProjects: 24,
-  activeDeployments: 8,
-  successRate: 98.5,
-  totalDeploys: 342
+const { projects, fetchProjects, getStats: getProjectStats } = useProjects()
+const { deployments, fetchDeployments, getRecentDeployments, getStats: getDeploymentStats } = useDeployments()
+
+const stats = computed(() => {
+  const projectStats = getProjectStats()
+  const deploymentStats = getDeploymentStats()
+  
+  return {
+    totalProjects: projectStats.totalProjects,
+    activeDeployments: deploymentStats.activeDeployments,
+    successRate: deploymentStats.successRate,
+    totalDeploys: deploymentStats.totalDeployments
+  }
 })
 
 const deploymentColumns = [
-  { key: 'project', label: 'Project' },
+  { key: 'project_id', label: 'Project' },
   { key: 'status', label: 'Status' },
   { key: 'commit_message', label: 'Commit' },
   { key: 'created_at', label: 'Time' },
   { key: 'actions', label: '' }
 ]
 
-const recentDeployments = ref([
-  {
-    id: '1',
-    project: 'my-web-app',
-    status: 'success',
-    commit_message: 'Fix login bug',
-    created_at: new Date(Date.now() - 300000).toISOString()
-  },
-  {
-    id: '2',
-    project: 'api-service',
-    status: 'building',
-    commit_message: 'Add new endpoints',
-    created_at: new Date(Date.now() - 600000).toISOString()
-  },
-  {
-    id: '3',
-    project: 'landing-page',
-    status: 'success',
-    commit_message: 'Update hero section',
-    created_at: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: '4',
-    project: 'admin-dashboard',
-    status: 'failed',
-    commit_message: 'Add analytics',
-    created_at: new Date(Date.now() - 7200000).toISOString()
-  }
-])
+const recentDeployments = computed(() => getRecentDeployments(4))
+
+// Fetch data on mount
+onMounted(async () => {
+  await fetchProjects()
+  await fetchDeployments()
+})
 
 const getStatusVariant = (status: string) => {
   const variants: Record<string, any> = {
@@ -187,6 +172,6 @@ const getStatusVariant = (status: string) => {
 }
 
 const viewDeployment = (deployment: any) => {
-  navigateTo(`/projects/${deployment.project}/deployments/${deployment.id}`)
+  navigateTo(`/projects/${deployment.project_id}/deployments/${deployment.id}`)
 }
 </script>

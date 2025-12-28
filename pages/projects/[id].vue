@@ -143,15 +143,25 @@ definePageMeta({
 const route = useRoute()
 const projectId = route.params.id as string
 
+const { fetchProject } = useProjects()
+const { deployments, fetchDeployments, createDeployment } = useDeployments()
+
 const project = ref<Project>({
   id: projectId,
-  name: 'my-web-app',
-  slug: 'my-web-app',
-  description: 'A modern web application built with Nuxt 3',
-  repository_url: 'https://github.com/user/my-web-app',
+  name: '',
+  slug: '',
   status: 'active',
-  created_at: new Date(Date.now() - 86400000 * 30).toISOString(),
-  updated_at: new Date(Date.now() - 3600000).toISOString()
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
+})
+
+// Fetch project and deployments on mount
+onMounted(async () => {
+  const fetchedProject = await fetchProject(projectId)
+  if (fetchedProject) {
+    project.value = fetchedProject
+  }
+  await fetchDeployments(projectId)
 })
 
 const tabs = [
@@ -168,36 +178,11 @@ const deploymentColumns = [
   { key: 'actions', label: '' }
 ]
 
-const deployments = ref<Deployment[]>([
-  {
-    id: '1',
-    project_id: projectId,
-    status: 'success',
-    commit_hash: 'a1b2c3d',
-    commit_message: 'Fix login bug',
-    deployed_url: 'https://my-app.example.com',
-    created_at: new Date(Date.now() - 300000).toISOString()
-  },
-  {
-    id: '2',
-    project_id: projectId,
-    status: 'success',
-    commit_hash: 'e4f5g6h',
-    commit_message: 'Add authentication',
-    deployed_url: 'https://my-app.example.com',
-    created_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: '3',
-    project_id: projectId,
-    status: 'failed',
-    commit_hash: 'i7j8k9l',
-    commit_message: 'Update dependencies',
-    created_at: new Date(Date.now() - 86400000 * 2).toISOString()
-  }
-])
+const projectDeployments = computed(() => 
+  deployments.value.filter(d => d.project_id === projectId)
+)
 
-const latestDeployment = computed(() => deployments.value[0])
+const latestDeployment = computed(() => projectDeployments.value[0])
 
 const statusVariant = computed(() => {
   const variants: Record<string, any> = {
@@ -222,9 +207,12 @@ const handleTabChange = (index: number) => {
   console.log('Tab changed to:', index)
 }
 
-const handleDeploy = () => {
+const handleDeploy = async () => {
   const { success } = useNotification()
-  success('Deployment started', 'Your project is being deployed...')
+  const deployment = await createDeployment(projectId)
+  if (deployment) {
+    success('Deployment started', 'Your project is being deployed...')
+  }
 }
 
 const handleSettings = () => {

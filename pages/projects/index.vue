@@ -93,53 +93,19 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const { projects, fetchProjects, deleteProject } = useProjects()
+const { success, error: errorNotif } = useNotification()
+
 const searchQuery = ref('')
 const selectedStatus = ref('All')
 
-const projects = ref<Project[]>([
-  {
-    id: '1',
-    name: 'my-web-app',
-    slug: 'my-web-app',
-    description: 'A modern web application built with Nuxt 3',
-    repository_url: 'https://github.com/user/my-web-app',
-    status: 'active',
-    created_at: new Date(Date.now() - 86400000 * 30).toISOString(),
-    updated_at: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: '2',
-    name: 'api-service',
-    slug: 'api-service',
-    description: 'RESTful API service for mobile apps',
-    repository_url: 'https://github.com/user/api-service',
-    status: 'active',
-    created_at: new Date(Date.now() - 86400000 * 20).toISOString(),
-    updated_at: new Date(Date.now() - 7200000).toISOString()
-  },
-  {
-    id: '3',
-    name: 'landing-page',
-    slug: 'landing-page',
-    description: 'Marketing landing page with animations',
-    repository_url: 'https://github.com/user/landing-page',
-    status: 'paused',
-    created_at: new Date(Date.now() - 86400000 * 15).toISOString(),
-    updated_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: '4',
-    name: 'admin-dashboard',
-    slug: 'admin-dashboard',
-    description: 'Internal admin dashboard for operations',
-    status: 'error',
-    created_at: new Date(Date.now() - 86400000 * 10).toISOString(),
-    updated_at: new Date(Date.now() - 43200000).toISOString()
-  }
-])
+// Fetch projects on mount
+onMounted(() => {
+  fetchProjects()
+})
 
 const filteredProjects = computed(() => {
-  let filtered = projects.value
+  let filtered = [...projects.value]
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
@@ -160,8 +126,6 @@ const deleteModal = ref({
   isOpen: false,
   project: null as Project | null
 })
-
-const { success, error } = useNotification()
 
 const createProject = () => {
   navigateTo('/projects/new')
@@ -190,10 +154,14 @@ const handleDelete = (project: Project) => {
   deleteModal.value.isOpen = true
 }
 
-const confirmDelete = () => {
+const confirmDelete = async () => {
   if (deleteModal.value.project) {
-    projects.value = projects.value.filter(p => p.id !== deleteModal.value.project!.id)
-    success('Project deleted', `${deleteModal.value.project.name} has been deleted`)
+    const result = await deleteProject(deleteModal.value.project.id)
+    if (result) {
+      success('Project deleted', `${deleteModal.value.project.name} has been deleted`)
+    } else {
+      errorNotif('Delete failed', 'Failed to delete project')
+    }
   }
   deleteModal.value.isOpen = false
   deleteModal.value.project = null
