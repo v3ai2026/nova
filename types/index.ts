@@ -26,6 +26,11 @@ export interface Deployment {
   deployed_url?: string
   created_at: string
   completed_at?: string
+  project?: {
+    id: string
+    name: string
+    slug: string
+  }
 }
 
 export interface Organization {
