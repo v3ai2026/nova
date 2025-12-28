@@ -9,24 +9,105 @@ generator client {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  projects  Project[]
+  id            String       @id @default(cuid())
+  email         String       @unique
+  name          String?
+  walletAddress String?      @unique @map("wallet_address")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+  projects      Project[]
+  ownedTeams    Team[]       @relation("TeamOwner")
+  teamMembers   TeamMember[]
+  apiTokens     ApiToken[]
+  deployments   Deployment[]
 
   @@map("users")
 }
 
 model Project {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  userId      String   @map("user_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id            String       @id @default(cuid())
+  name          String
+  slug          String       @unique
+  description   String?
+  repositoryUrl String?      @map("repository_url")
+  status        String       @default("active")
+  userId        String       @map("user_id")
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deployments   Deployment[]
+  chainRecords  ChainRecord[]
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
 
   @@map("projects")
+}
+
+model Deployment {
+  id            String       @id @default(cuid())
+  projectId     String       @map("project_id")
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId        String       @map("user_id")
+  user          User         @relation(fields: [userId], references: [id])
+  branch        String       @default("main")
+  commitSha     String       @map("commit_sha")
+  commitMessage String?      @map("commit_message")
+  status        String       @default("pending")
+  url           String?
+  buildTime     Int?         @map("build_time")
+  chainTxHash   String?      @unique @map("chain_tx_hash")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  @@map("deployments")
+}
+
+model Team {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  ownerId   String       @map("owner_id")
+  owner     User         @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members   TeamMember[]
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  teamId    String   @map("team_id")
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("member")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model ApiToken {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  token      String    @unique
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@map("api_tokens")
+}
+
+model ChainRecord {
+  id          String   @id @default(cuid())
+  projectId   String   @map("project_id")
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  txHash      String   @unique @map("tx_hash")
+  blockNumber Int      @map("block_number")
+  eventType   String   @map("event_type")
+  data        Json
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("chain_records")
 }
