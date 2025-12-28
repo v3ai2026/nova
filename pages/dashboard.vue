@@ -5,7 +5,13 @@
       <p class="text-slate-300">Welcome back! Here's what's happening with your projects.</p>
     </div>
 
-    <!-- Stats Cards -->
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center py-12">
+      <LoadingSpinner size="lg" />
+    </div>
+
+    <div v-else>
+      <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <StatsCard
         title="Total Projects"
@@ -118,6 +124,7 @@
         </NuxtLink>
       </div>
     </Card>
+    </div>
   </div>
 </template>
 
@@ -130,51 +137,44 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const stats = ref({
-  totalProjects: 24,
-  activeDeployments: 8,
-  successRate: 98.5,
-  totalDeploys: 342
+const { projects, fetchProjects } = useProjects()
+const { deployments, fetchDeployments } = useDeployments()
+const loading = ref(true)
+
+const stats = computed(() => {
+  const totalProjects = projects.value.length
+  const activeDeployments = deployments.value.filter(d => d.status === 'building' || d.status === 'pending').length
+  const successfulDeployments = deployments.value.filter(d => d.status === 'success').length
+  const totalDeploys = deployments.value.length
+  const successRate = totalDeploys > 0 ? (successfulDeployments / totalDeploys) * 100 : 0
+
+  return {
+    totalProjects,
+    activeDeployments,
+    successRate: Math.round(successRate * 10) / 10,
+    totalDeploys
+  }
 })
 
 const deploymentColumns = [
   { key: 'project', label: 'Project' },
   { key: 'status', label: 'Status' },
-  { key: 'commit_message', label: 'Commit' },
-  { key: 'created_at', label: 'Time' },
+  { key: 'commitMsg', label: 'Commit' },
+  { key: 'createdAt', label: 'Time' },
   { key: 'actions', label: '' }
 ]
 
-const recentDeployments = ref([
-  {
-    id: '1',
-    project: 'my-web-app',
-    status: 'success',
-    commit_message: 'Fix login bug',
-    created_at: new Date(Date.now() - 300000).toISOString()
-  },
-  {
-    id: '2',
-    project: 'api-service',
-    status: 'building',
-    commit_message: 'Add new endpoints',
-    created_at: new Date(Date.now() - 600000).toISOString()
-  },
-  {
-    id: '3',
-    project: 'landing-page',
-    status: 'success',
-    commit_message: 'Update hero section',
-    created_at: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: '4',
-    project: 'admin-dashboard',
-    status: 'failed',
-    commit_message: 'Add analytics',
-    created_at: new Date(Date.now() - 7200000).toISOString()
-  }
-])
+const recentDeployments = computed(() => {
+  return deployments.value.slice(0, 5).map(d => ({
+    id: d.id,
+    project: (d as any).project?.name || 'Unknown',
+    status: d.status,
+    commit_message: d.commitMsg || 'No message',
+    commitMsg: d.commitMsg || 'No message',
+    createdAt: d.createdAt,
+    created_at: d.createdAt
+  }))
+})
 
 const getStatusVariant = (status: string) => {
   const variants: Record<string, any> = {
@@ -187,6 +187,20 @@ const getStatusVariant = (status: string) => {
 }
 
 const viewDeployment = (deployment: any) => {
-  navigateTo(`/projects/${deployment.project}/deployments/${deployment.id}`)
+  navigateTo(`/deployments/${deployment.id}`)
 }
+
+// Fetch data on mount
+onMounted(async () => {
+  try {
+    await Promise.all([
+      fetchProjects(),
+      fetchDeployments()
+    ])
+  } catch (error) {
+    console.error('Failed to load dashboard data:', error)
+  } finally {
+    loading.value = false
+  }
+})
 </script>
