@@ -69,6 +69,7 @@ const products = ref([
     name: 'AirPods Pro',
     description: '主动降噪无线耳机',
     price: 1999,
+    // Demo URL - 实际使用时应替换为真实产品模型
     modelUrl: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb'
   },
   {
@@ -76,6 +77,7 @@ const products = ref([
     name: 'iPhone 15 Pro',
     description: '钛金属边框智能手机',
     price: 7999,
+    // Demo URL - 实际使用时应替换为真实产品模型
     modelUrl: 'https://modelviewer.dev/shared-assets/models/NeilArmstrong.glb'
   },
   {
@@ -83,6 +85,7 @@ const products = ref([
     name: 'MacBook Pro',
     description: 'M3 Max 芯片专业笔记本',
     price: 19999,
+    // Demo URL - 实际使用时应替换为真实产品模型
     modelUrl: 'https://modelviewer.dev/shared-assets/models/glTF-Sample-Models/2.0/DamagedHelmet/glTF/DamagedHelmet.gltf'
   }
 ])

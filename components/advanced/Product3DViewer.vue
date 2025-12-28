@@ -130,6 +130,7 @@ const props = withDefaults(defineProps<Props>(), {
 const containerRef = ref<HTMLElement | null>(null)
 const { loading, error, scene, camera, renderer, loadModel, animate, dispose } = use3DModel()
 const { isARSupported, startARSession } = useAR()
+const { addNotification } = useNotification()
 const autoRotate = ref(true)
 let controls: OrbitControls | null = null
 
@@ -209,7 +210,10 @@ const handleShare = () => {
     })
   } else {
     navigator.clipboard.writeText(window.location.href)
-    alert('链接已复制到剪贴板')
+    addNotification({
+      type: 'success',
+      message: '链接已复制到剪贴板'
+    })
   }
 }
 </script>

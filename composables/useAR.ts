@@ -1,12 +1,13 @@
 export const useAR = () => {
   const isARSupported = ref(false)
   const isARActive = ref(false)
+  const { addNotification } = useNotification()
 
   const checkARSupport = async () => {
     if ('xr' in navigator) {
       try {
-        // @ts-ignore - WebXR 类型可能不完整
-        const supported = await navigator.xr.isSessionSupported('immersive-ar')
+        const xr = (navigator as any).xr
+        const supported = await xr.isSessionSupported('immersive-ar')
         isARSupported.value = supported
       } catch (e) {
         isARSupported.value = false
@@ -18,13 +19,16 @@ export const useAR = () => {
 
   const startARSession = async (modelUrl: string) => {
     if (!isARSupported.value) {
-      alert('您的设备不支持 AR 功能')
+      addNotification({
+        type: 'error',
+        message: '您的设备不支持 AR 功能'
+      })
       return
     }
 
     try {
-      // @ts-ignore
-      const session = await navigator.xr.requestSession('immersive-ar', {
+      const xr = (navigator as any).xr
+      const session = await xr.requestSession('immersive-ar', {
         requiredFeatures: ['hit-test', 'dom-overlay'],
         domOverlay: { root: document.body }
       })
@@ -41,7 +45,10 @@ export const useAR = () => {
       return session
     } catch (e) {
       console.error('启动 AR 会话失败:', e)
-      alert('无法启动 AR 功能，请在支持的设备上尝试')
+      addNotification({
+        type: 'error',
+        message: '无法启动 AR 功能，请在支持的设备上尝试'
+      })
     }
   }
 
