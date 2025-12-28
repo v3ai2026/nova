@@ -1,5 +1,5 @@
 <template>
-  <div class="p-8">
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 p-8">
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">
         3D 产品查看器
@@ -57,11 +57,6 @@
 
 <script setup lang="ts">
 import { Package } from 'lucide-vue-next'
-
-definePageMeta({
-  layout: 'default',
-  middleware: 'auth'
-})
 
 const products = ref([
   {
