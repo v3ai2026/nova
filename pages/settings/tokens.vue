@@ -141,18 +141,17 @@
 
 <script setup lang="ts">
 import { Key, Plus, Trash2, Copy } from 'lucide-vue-next'
+import { formatDate } from '~/utils/formatting'
 
 definePageMeta({
   layout: 'dashboard',
   middleware: 'auth'
 })
 
-const { $supabase } = useNuxtApp()
-const { profile } = useAuth()
-const notification = useNotification()
+const { user } = useAuth()
+const { tokens, loading, fetchTokens, createToken: createApiToken, deleteToken: deleteApiToken } = useApiTokens()
+const { success, error: showError } = useNotification()
 
-const tokens = ref<any[]>([])
-const loading = ref(true)
 const creating = ref(false)
 const showCreateModal = ref(false)
 const newTokenValue = ref('')
@@ -162,63 +161,27 @@ const tokenForm = ref({
   expiresIn: '30'
 })
 
-const loadTokens = async () => {
-  const { data: orgs } = await $supabase
-    .from('organization_members')
-    .select('organization_id')
-    .eq('user_id', profile.value?.id)
-    .limit(1)
-    .maybeSingle()
-
-  if (orgs) {
-    const { data } = await $supabase
-      .from('api_tokens')
-      .select('*')
-      .eq('user_id', profile.value?.id)
-      .order('created_at', { ascending: false })
-
-    tokens.value = data || []
-  }
-  loading.value = false
-}
-
 const createToken = async () => {
   try {
     creating.value = true
 
-    const { data: orgs } = await $supabase
-      .from('organization_members')
-      .select('organization_id')
-      .eq('user_id', profile.value?.id)
-      .limit(1)
-      .maybeSingle()
-
-    if (!orgs) {
-      notification.error('No organization found')
+    if (!user.value) {
+      showError('Error', 'User not found')
       return
     }
 
-    const token = `dh_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`
-
     const expiresAt = tokenForm.value.expiresIn === 'never'
-      ? null
+      ? undefined
       : new Date(Date.now() + parseInt(tokenForm.value.expiresIn) * 24 * 60 * 60 * 1000).toISOString()
 
-    await $supabase
-      .from('api_tokens')
-      .insert({
-        user_id: profile.value?.id,
-        organization_id: orgs.organization_id,
-        name: tokenForm.value.name,
-        token,
-        expires_at: expiresAt
-      })
-
-    newTokenValue.value = token
-    await loadTokens()
-    notification.success('Token created successfully')
-  } catch (e: any) {
-    notification.error('Failed to create token', e.message)
+    const token = await createApiToken(tokenForm.value.name, expiresAt)
+    
+    if (token) {
+      newTokenValue.value = token.token
+      success('Token created successfully')
+    } else {
+      showError('Failed to create token')
+    }
   } finally {
     creating.value = false
   }
@@ -227,18 +190,17 @@ const createToken = async () => {
 const deleteToken = async (id: string) => {
   if (!confirm('Are you sure you want to delete this token?')) return
 
-  try {
-    await $supabase.from('api_tokens').delete().eq('id', id)
-    await loadTokens()
-    notification.success('Token deleted')
-  } catch (e: any) {
-    notification.error('Failed to delete token', e.message)
+  const result = await deleteApiToken(id)
+  if (result) {
+    success('Token deleted')
+  } else {
+    showError('Failed to delete token')
   }
 }
 
 const copyToken = () => {
   navigator.clipboard.writeText(newTokenValue.value)
-  notification.success('Token copied to clipboard')
+  success('Token copied to clipboard')
 }
 
 const closeModal = () => {
@@ -247,15 +209,7 @@ const closeModal = () => {
   tokenForm.value = { name: '', expiresIn: '30' }
 }
 
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  })
-}
-
 onMounted(() => {
-  loadTokens()
+  fetchTokens()
 })
 </script>
