@@ -12,7 +12,7 @@ export const useBlockchain = () => {
     error.value = null
 
     try {
-      if (typeof window.ethereum === 'undefined') {
+      if (typeof window === 'undefined' || typeof window.ethereum === 'undefined') {
         throw new Error('请安装 MetaMask 或其他 Web3 钱包')
       }
 
@@ -45,7 +45,9 @@ export const useBlockchain = () => {
 
       // 监听链变化
       window.ethereum.on('chainChanged', () => {
-        window.location.reload()
+        if (typeof window !== 'undefined') {
+          window.location.reload()
+        }
       })
 
     } catch (e: any) {
