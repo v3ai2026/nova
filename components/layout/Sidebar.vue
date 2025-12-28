@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { LayoutDashboard, FolderGit2, Rocket, Users, Settings, Key, Activity } from 'lucide-vue-next'
+import { LayoutDashboard, FolderGit2, Rocket, Users, Settings, Key, Activity, Package } from 'lucide-vue-next'
 
 const route = useRoute()
 
@@ -44,6 +44,7 @@ const navigation = [
   { name: 'Projects', path: '/projects', icon: FolderGit2 },
   { name: 'Deployments', path: '/deployments', icon: Rocket },
   { name: 'Activity', path: '/activity', icon: Activity },
+  { name: '3D 产品', path: '/products/3d-viewer', icon: Package },
   { name: 'Team', path: '/team', icon: Users },
   { name: 'API Tokens', path: '/settings/tokens', icon: Key },
   { name: 'Settings', path: '/settings', icon: Settings }
