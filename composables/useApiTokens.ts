@@ -17,13 +17,13 @@ export const useApiTokens = () => {
     }
   }
 
-  const createToken = async (name: string) => {
+  const createToken = async (name: string, userId: string = 'temp-user-id') => {
     loading.value = true
     error.value = null
     try {
       const token = await $fetch('/api/tokens', {
         method: 'POST',
-        body: { name }
+        body: { name, userId }
       })
       success('令牌创建成功')
       await fetchTokens()

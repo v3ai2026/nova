@@ -1,4 +1,5 @@
 import { prisma } from '~/server/utils/prisma'
+import crypto from 'crypto'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -12,9 +13,9 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Simulate blockchain transaction
-    const txHash = `0x${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`
-    const blockNumber = Math.floor(Math.random() * 10000000) + 1000000
+    // Generate realistic blockchain transaction hash and block number
+    const txHash = `0x${crypto.randomBytes(32).toString('hex')}`
+    const blockNumber = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 1000)
 
     // Store chain record
     const chainRecord = await prisma.chainRecord.create({

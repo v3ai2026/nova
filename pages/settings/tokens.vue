@@ -99,21 +99,6 @@
             />
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Expires In
-            </label>
-            <select
-              v-model="tokenForm.expiresIn"
-              class="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none text-slate-900 dark:text-white"
-            >
-              <option value="30">30 days</option>
-              <option value="60">60 days</option>
-              <option value="90">90 days</option>
-              <option value="never">Never</option>
-            </select>
-          </div>
-
           <div class="flex gap-3 pt-4">
             <button
               type="submit"

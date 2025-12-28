@@ -44,10 +44,9 @@ export const useBlockchain = () => {
       })
 
       // 监听链变化
-      window.ethereum.on('chainChanged', () => {
-        if (typeof window !== 'undefined') {
-          window.location.reload()
-        }
+      window.ethereum.on('chainChanged', (newChainId: string) => {
+        chainId.value = parseInt(newChainId, 16)
+        error.value = '网络已变更，请刷新页面以继续使用'
       })
 
     } catch (e: any) {
