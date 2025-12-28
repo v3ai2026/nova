@@ -292,7 +292,17 @@ npm run preview
 
 ## 📚 Documentation
 
-- [Component Documentation](./COMPONENTS.md) - Complete component API reference
+### Project Documentation
+
+- **[Complete Documentation Index](./docs/README.md)** - 📋 Start here for full project documentation
+- **[Complete Routes](./docs/ROUTES_COMPLETE.md)** - 🗺️ All 17 routes, composables, and API endpoints
+- **[Data Flow Guide](./docs/DATA_FLOW.md)** - 🔄 Data flow patterns and composable connections
+- **[API Specifications](./docs/API_SPEC.md)** - 🔌 Complete API reference (21 endpoints)
+- [Component Documentation](./COMPONENTS.md) - 🎨 Complete component API reference
+- [Database Documentation](./DATABASE.md) - 🗄️ Database configuration and setup
+
+### External Resources
+
 - [Nuxt Documentation](https://nuxt.com/docs) - Nuxt 3 framework docs
 - [TailwindCSS Documentation](https://tailwindcss.com/docs) - Styling reference
 - [Supabase Documentation](https://supabase.com/docs) - Authentication & database
