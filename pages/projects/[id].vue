@@ -138,6 +138,7 @@
     <!-- Error State -->
     <div v-else>
       <EmptyState
+        :icon="FolderGit2"
         title="Project not found"
         description="The project you're looking for doesn't exist or you don't have access to it."
       />
