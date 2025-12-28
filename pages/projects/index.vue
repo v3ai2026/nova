@@ -93,64 +93,25 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const { projects, fetchProjects, deleteProject } = useProjects()
+const { success, error } = useNotification()
+
 const searchQuery = ref('')
 const selectedStatus = ref('All')
-
-const projects = ref<Project[]>([
-  {
-    id: '1',
-    name: 'my-web-app',
-    slug: 'my-web-app',
-    description: 'A modern web application built with Nuxt 3',
-    repository_url: 'https://github.com/user/my-web-app',
-    status: 'active',
-    created_at: new Date(Date.now() - 86400000 * 30).toISOString(),
-    updated_at: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: '2',
-    name: 'api-service',
-    slug: 'api-service',
-    description: 'RESTful API service for mobile apps',
-    repository_url: 'https://github.com/user/api-service',
-    status: 'active',
-    created_at: new Date(Date.now() - 86400000 * 20).toISOString(),
-    updated_at: new Date(Date.now() - 7200000).toISOString()
-  },
-  {
-    id: '3',
-    name: 'landing-page',
-    slug: 'landing-page',
-    description: 'Marketing landing page with animations',
-    repository_url: 'https://github.com/user/landing-page',
-    status: 'paused',
-    created_at: new Date(Date.now() - 86400000 * 15).toISOString(),
-    updated_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: '4',
-    name: 'admin-dashboard',
-    slug: 'admin-dashboard',
-    description: 'Internal admin dashboard for operations',
-    status: 'error',
-    created_at: new Date(Date.now() - 86400000 * 10).toISOString(),
-    updated_at: new Date(Date.now() - 43200000).toISOString()
-  }
-])
 
 const filteredProjects = computed(() => {
   let filtered = projects.value
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(p =>
+    filtered = filtered.filter((p: any) =>
       p.name.toLowerCase().includes(query) ||
       p.description?.toLowerCase().includes(query)
     )
   }
 
   if (selectedStatus.value !== 'All') {
-    filtered = filtered.filter(p => p.status === selectedStatus.value.toLowerCase())
+    filtered = filtered.filter((p: any) => p.status === selectedStatus.value.toLowerCase())
   }
 
   return filtered
@@ -158,10 +119,8 @@ const filteredProjects = computed(() => {
 
 const deleteModal = ref({
   isOpen: false,
-  project: null as Project | null
+  project: null as any
 })
-
-const { success, error } = useNotification()
 
 const createProject = () => {
   navigateTo('/projects/new')
@@ -172,30 +131,37 @@ const filterByStatus = (status: string, close: () => void) => {
   close()
 }
 
-const handleDeploy = (project: Project) => {
+const handleDeploy = (project: any) => {
   success('Deployment started', `Deploying ${project.name}...`)
   navigateTo(`/projects/${project.id}`)
 }
 
-const handleSettings = (project: Project) => {
+const handleSettings = (project: any) => {
   navigateTo(`/projects/${project.id}/settings`)
 }
 
-const handleEdit = (project: Project) => {
+const handleEdit = (project: any) => {
   navigateTo(`/projects/${project.id}/edit`)
 }
 
-const handleDelete = (project: Project) => {
+const handleDelete = (project: any) => {
   deleteModal.value.project = project
   deleteModal.value.isOpen = true
 }
 
-const confirmDelete = () => {
+const confirmDelete = async () => {
   if (deleteModal.value.project) {
-    projects.value = projects.value.filter(p => p.id !== deleteModal.value.project!.id)
-    success('Project deleted', `${deleteModal.value.project.name} has been deleted`)
+    try {
+      await deleteProject(deleteModal.value.project.id)
+    } catch (e) {
+      // Error already handled in composable
+    }
   }
   deleteModal.value.isOpen = false
   deleteModal.value.project = null
 }
+
+onMounted(() => {
+  fetchProjects()
+})
 </script>

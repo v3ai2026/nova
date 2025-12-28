@@ -37,12 +37,9 @@
               {{ token.name }}
             </p>
             <div class="flex items-center gap-3 mt-2 text-xs text-slate-500 dark:text-slate-400">
-              <span>Created {{ formatDate(token.created_at) }}</span>
-              <span v-if="token.last_used_at">Last used {{ formatDate(token.last_used_at) }}</span>
+              <span>Created {{ formatDate(token.createdAt) }}</span>
+              <span v-if="token.lastUsedAt">Last used {{ formatDate(token.lastUsedAt) }}</span>
               <span v-else>Never used</span>
-              <span v-if="token.expires_at" class="text-yellow-600 dark:text-yellow-400">
-                Expires {{ formatDate(token.expires_at) }}
-              </span>
             </div>
           </div>
           <button
@@ -147,78 +144,26 @@ definePageMeta({
   middleware: 'auth'
 })
 
-const { $supabase } = useNuxtApp()
-const { profile } = useAuth()
 const notification = useNotification()
+const { tokens, loading, fetchTokens, createToken: createApiToken, deleteToken: deleteApiToken } = useApiTokens()
 
-const tokens = ref<any[]>([])
-const loading = ref(true)
 const creating = ref(false)
 const showCreateModal = ref(false)
 const newTokenValue = ref('')
 
 const tokenForm = ref({
   name: '',
-  expiresIn: '30'
+  userId: 'temp-user-id' // In a real app, get from auth
 })
-
-const loadTokens = async () => {
-  const { data: orgs } = await $supabase
-    .from('organization_members')
-    .select('organization_id')
-    .eq('user_id', profile.value?.id)
-    .limit(1)
-    .maybeSingle()
-
-  if (orgs) {
-    const { data } = await $supabase
-      .from('api_tokens')
-      .select('*')
-      .eq('user_id', profile.value?.id)
-      .order('created_at', { ascending: false })
-
-    tokens.value = data || []
-  }
-  loading.value = false
-}
 
 const createToken = async () => {
   try {
     creating.value = true
-
-    const { data: orgs } = await $supabase
-      .from('organization_members')
-      .select('organization_id')
-      .eq('user_id', profile.value?.id)
-      .limit(1)
-      .maybeSingle()
-
-    if (!orgs) {
-      notification.error('No organization found')
-      return
-    }
-
-    const token = `dh_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`
-
-    const expiresAt = tokenForm.value.expiresIn === 'never'
-      ? null
-      : new Date(Date.now() + parseInt(tokenForm.value.expiresIn) * 24 * 60 * 60 * 1000).toISOString()
-
-    await $supabase
-      .from('api_tokens')
-      .insert({
-        user_id: profile.value?.id,
-        organization_id: orgs.organization_id,
-        name: tokenForm.value.name,
-        token,
-        expires_at: expiresAt
-      })
-
-    newTokenValue.value = token
-    await loadTokens()
+    const token = await createApiToken(tokenForm.value.name)
+    newTokenValue.value = token.token
     notification.success('Token created successfully')
   } catch (e: any) {
-    notification.error('Failed to create token', e.message)
+    // Error already handled in composable
   } finally {
     creating.value = false
   }
@@ -228,11 +173,9 @@ const deleteToken = async (id: string) => {
   if (!confirm('Are you sure you want to delete this token?')) return
 
   try {
-    await $supabase.from('api_tokens').delete().eq('id', id)
-    await loadTokens()
-    notification.success('Token deleted')
+    await deleteApiToken(id)
   } catch (e: any) {
-    notification.error('Failed to delete token', e.message)
+    // Error already handled in composable
   }
 }
 
@@ -244,7 +187,7 @@ const copyToken = () => {
 const closeModal = () => {
   showCreateModal.value = false
   newTokenValue.value = ''
-  tokenForm.value = { name: '', expiresIn: '30' }
+  tokenForm.value = { name: '', userId: 'temp-user-id' }
 }
 
 const formatDate = (date: string) => {
@@ -256,6 +199,6 @@ const formatDate = (date: string) => {
 }
 
 onMounted(() => {
-  loadTokens()
+  fetchTokens()
 })
 </script>

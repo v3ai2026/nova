@@ -130,51 +130,46 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const { deployments, fetchDeployments } = useDeployments()
+
 const stats = ref({
-  totalProjects: 24,
-  activeDeployments: 8,
-  successRate: 98.5,
-  totalDeploys: 342
+  totalProjects: 0,
+  activeDeployments: 0,
+  successRate: 0,
+  totalDeploys: 0
 })
 
 const deploymentColumns = [
   { key: 'project', label: 'Project' },
   { key: 'status', label: 'Status' },
-  { key: 'commit_message', label: 'Commit' },
-  { key: 'created_at', label: 'Time' },
+  { key: 'commitMessage', label: 'Commit' },
+  { key: 'createdAt', label: 'Time' },
   { key: 'actions', label: '' }
 ]
 
-const recentDeployments = ref([
-  {
-    id: '1',
-    project: 'my-web-app',
-    status: 'success',
-    commit_message: 'Fix login bug',
-    created_at: new Date(Date.now() - 300000).toISOString()
-  },
-  {
-    id: '2',
-    project: 'api-service',
-    status: 'building',
-    commit_message: 'Add new endpoints',
-    created_at: new Date(Date.now() - 600000).toISOString()
-  },
-  {
-    id: '3',
-    project: 'landing-page',
-    status: 'success',
-    commit_message: 'Update hero section',
-    created_at: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: '4',
-    project: 'admin-dashboard',
-    status: 'failed',
-    commit_message: 'Add analytics',
-    created_at: new Date(Date.now() - 7200000).toISOString()
+const recentDeployments = computed(() => {
+  return deployments.value.slice(0, 5).map(d => ({
+    ...d,
+    project: d.project?.name || 'Unknown',
+    commit_message: d.commitMessage,
+    created_at: d.createdAt
+  }))
+})
+
+// Fetch stats from API
+const loadStats = async () => {
+  try {
+    const data = await $fetch('/api/stats')
+    stats.value = {
+      totalProjects: data.totalProjects || 0,
+      activeDeployments: data.activeDeployments || 0,
+      successRate: data.successRate || 0,
+      totalDeploys: data.totalDeployments || 0
+    }
+  } catch (e) {
+    console.error('Failed to load stats:', e)
   }
-])
+}
 
 const getStatusVariant = (status: string) => {
   const variants: Record<string, any> = {
@@ -187,6 +182,13 @@ const getStatusVariant = (status: string) => {
 }
 
 const viewDeployment = (deployment: any) => {
-  navigateTo(`/projects/${deployment.project}/deployments/${deployment.id}`)
+  navigateTo(`/projects/${deployment.projectId}/deployments/${deployment.id}`)
 }
+
+onMounted(async () => {
+  await Promise.all([
+    fetchDeployments(),
+    loadStats()
+  ])
+})
 </script>

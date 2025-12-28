@@ -10,12 +10,12 @@
       </NuxtLink>
       <div class="flex items-start justify-between">
         <div>
-          <h1 class="text-3xl font-bold text-white mb-2">{{ project.name }}</h1>
-          <p class="text-slate-300">{{ project.description }}</p>
+          <h1 class="text-3xl font-bold text-white mb-2">{{ project?.name || 'Loading...' }}</h1>
+          <p class="text-slate-300">{{ project?.description || '' }}</p>
         </div>
         <div class="flex items-center gap-3">
           <Badge :variant="statusVariant">
-            {{ project.status }}
+            {{ project?.status || 'loading' }}
           </Badge>
           <Button :iconLeft="Rocket" @click="handleDeploy">
             Deploy Now
@@ -68,11 +68,27 @@
       </template>
 
       <template #tab-1>
+        <!-- Blockchain Tab -->
+        <div class="space-y-6">
+          <!-- Wallet Connection -->
+          <Card>
+            <template #header>
+              <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Blockchain Integration</h2>
+            </template>
+            <WalletConnect />
+          </Card>
+
+          <!-- Chain Records -->
+          <ChainRecords :projectId="projectId" />
+        </div>
+      </template>
+
+      <template #tab-2>
         <!-- Activity Tab -->
         <ActivityFeed />
       </template>
 
-      <template #tab-2>
+      <template #tab-3>
         <!-- Settings Tab -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
@@ -82,23 +98,23 @@
             <div class="space-y-4">
               <div>
                 <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Name</label>
-                <p class="mt-1 text-slate-900 dark:text-white">{{ project.name }}</p>
+                <p class="mt-1 text-slate-900 dark:text-white">{{ project?.name }}</p>
               </div>
-              <div>
+              <div v-if="project?.repositoryUrl">
                 <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Repository</label>
                 <p class="mt-1">
                   <a
-                    :href="project.repository_url"
+                    :href="project.repositoryUrl"
                     target="_blank"
                     class="text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    {{ project.repository_url }}
+                    {{ project.repositoryUrl }}
                   </a>
                 </p>
               </div>
               <div>
                 <label class="text-sm font-medium text-slate-700 dark:text-slate-300">Created</label>
-                <p class="mt-1 text-slate-900 dark:text-white">{{ formatDate(project.created_at, 'long') }}</p>
+                <p class="mt-1 text-slate-900 dark:text-white">{{ formatDate(project?.createdAt || '', 'long') }}</p>
               </div>
             </div>
           </Card>
@@ -131,9 +147,8 @@
 </template>
 
 <script setup lang="ts">
-import { ArrowLeft, Rocket, Settings, Eye, Activity as ActivityIcon, Cog } from 'lucide-vue-next'
+import { ArrowLeft, Rocket, Settings, Eye, Activity as ActivityIcon, Cog, Shield } from 'lucide-vue-next'
 import { formatDate } from '~/utils/formatting'
-import type { Project, Deployment } from '~/types'
 
 definePageMeta({
   layout: 'default',
@@ -143,59 +158,24 @@ definePageMeta({
 const route = useRoute()
 const projectId = route.params.id as string
 
-const project = ref<Project>({
-  id: projectId,
-  name: 'my-web-app',
-  slug: 'my-web-app',
-  description: 'A modern web application built with Nuxt 3',
-  repository_url: 'https://github.com/user/my-web-app',
-  status: 'active',
-  created_at: new Date(Date.now() - 86400000 * 30).toISOString(),
-  updated_at: new Date(Date.now() - 3600000).toISOString()
-})
+const { currentProject: project, fetchProject } = useProjects()
+const { deployments, fetchDeployments } = useDeployments()
+const { success } = useNotification()
 
 const tabs = [
   { label: 'Deployments', icon: Rocket },
+  { label: 'Blockchain', icon: Shield },
   { label: 'Activity', icon: ActivityIcon },
   { label: 'Settings', icon: Cog }
 ]
 
 const deploymentColumns = [
-  { key: 'commit_hash', label: 'Commit' },
+  { key: 'commitSha', label: 'Commit' },
   { key: 'status', label: 'Status' },
-  { key: 'commit_message', label: 'Message' },
-  { key: 'created_at', label: 'Date' },
+  { key: 'commitMessage', label: 'Message' },
+  { key: 'createdAt', label: 'Date' },
   { key: 'actions', label: '' }
 ]
-
-const deployments = ref<Deployment[]>([
-  {
-    id: '1',
-    project_id: projectId,
-    status: 'success',
-    commit_hash: 'a1b2c3d',
-    commit_message: 'Fix login bug',
-    deployed_url: 'https://my-app.example.com',
-    created_at: new Date(Date.now() - 300000).toISOString()
-  },
-  {
-    id: '2',
-    project_id: projectId,
-    status: 'success',
-    commit_hash: 'e4f5g6h',
-    commit_message: 'Add authentication',
-    deployed_url: 'https://my-app.example.com',
-    created_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: '3',
-    project_id: projectId,
-    status: 'failed',
-    commit_hash: 'i7j8k9l',
-    commit_message: 'Update dependencies',
-    created_at: new Date(Date.now() - 86400000 * 2).toISOString()
-  }
-])
 
 const latestDeployment = computed(() => deployments.value[0])
 
@@ -205,7 +185,7 @@ const statusVariant = computed(() => {
     paused: 'warning',
     error: 'error'
   }
-  return variants[project.value.status] || 'default'
+  return variants[project.value?.status] || 'default'
 })
 
 const getStatusVariant = (status: string) => {
@@ -223,7 +203,6 @@ const handleTabChange = (index: number) => {
 }
 
 const handleDeploy = () => {
-  const { success } = useNotification()
   success('Deployment started', 'Your project is being deployed...')
 }
 
@@ -231,7 +210,14 @@ const handleSettings = () => {
   navigateTo(`/projects/${projectId}/settings`)
 }
 
-const viewDeployment = (deployment: Deployment) => {
+const viewDeployment = (deployment: any) => {
   navigateTo(`/projects/${projectId}/deployments/${deployment.id}`)
 }
+
+onMounted(async () => {
+  await Promise.all([
+    fetchProject(projectId),
+    fetchDeployments(projectId)
+  ])
+})
 </script>
