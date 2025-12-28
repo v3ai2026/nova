@@ -13,6 +13,10 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // NOTE: This is a simulated blockchain transaction for development
+    // For production, integrate with a real blockchain (Ethereum, Polygon, etc.)
+    // See docs/BLOCKCHAIN_INTEGRATION.md for implementation details
+    
     // Generate realistic blockchain transaction hash and block number
     const txHash = `0x${crypto.randomBytes(32).toString('hex')}`
     const blockNumber = Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 1000)

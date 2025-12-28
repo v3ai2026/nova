@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
     const [
       totalProjects,
       totalDeployments,
-      activeDeployments,
+      successfulDeployments,
       totalUsers,
       totalChainRecords
     ] = await Promise.all([
@@ -19,13 +19,13 @@ export default defineEventHandler(async (event) => {
 
     // Calculate success rate
     const successRate = totalDeployments > 0 
-      ? ((activeDeployments / totalDeployments) * 100).toFixed(1)
+      ? ((successfulDeployments / totalDeployments) * 100).toFixed(1)
       : '0.0'
 
     return {
       totalProjects,
       totalDeployments,
-      activeDeployments,
+      activeDeployments: successfulDeployments, // Number of successful deployments
       totalUsers,
       totalChainRecords,
       successRate: parseFloat(successRate)

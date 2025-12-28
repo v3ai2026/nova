@@ -17,6 +17,8 @@ export const useApiTokens = () => {
     }
   }
 
+  // NOTE: In production, get userId from authentication context (e.g., Supabase, NextAuth)
+  // Remove the default value and require proper user authentication
   const createToken = async (name: string, userId: string = 'temp-user-id') => {
     loading.value = true
     error.value = null
