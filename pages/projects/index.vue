@@ -36,8 +36,13 @@
       </Dropdown>
     </div>
 
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center py-12">
+      <LoadingSpinner size="lg" />
+    </div>
+
     <!-- Projects Grid -->
-    <div v-if="filteredProjects.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-else-if="filteredProjects.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <ProjectCard
         v-for="project in filteredProjects"
         :key="project.id"
@@ -96,47 +101,13 @@ definePageMeta({
 const searchQuery = ref('')
 const selectedStatus = ref('All')
 
-const projects = ref<Project[]>([
-  {
-    id: '1',
-    name: 'my-web-app',
-    slug: 'my-web-app',
-    description: 'A modern web application built with Nuxt 3',
-    repository_url: 'https://github.com/user/my-web-app',
-    status: 'active',
-    created_at: new Date(Date.now() - 86400000 * 30).toISOString(),
-    updated_at: new Date(Date.now() - 3600000).toISOString()
-  },
-  {
-    id: '2',
-    name: 'api-service',
-    slug: 'api-service',
-    description: 'RESTful API service for mobile apps',
-    repository_url: 'https://github.com/user/api-service',
-    status: 'active',
-    created_at: new Date(Date.now() - 86400000 * 20).toISOString(),
-    updated_at: new Date(Date.now() - 7200000).toISOString()
-  },
-  {
-    id: '3',
-    name: 'landing-page',
-    slug: 'landing-page',
-    description: 'Marketing landing page with animations',
-    repository_url: 'https://github.com/user/landing-page',
-    status: 'paused',
-    created_at: new Date(Date.now() - 86400000 * 15).toISOString(),
-    updated_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: '4',
-    name: 'admin-dashboard',
-    slug: 'admin-dashboard',
-    description: 'Internal admin dashboard for operations',
-    status: 'error',
-    created_at: new Date(Date.now() - 86400000 * 10).toISOString(),
-    updated_at: new Date(Date.now() - 43200000).toISOString()
-  }
-])
+const { projects, loading, error: projectError, fetchProjects, deleteProject } = useProjects()
+const { success, error } = useNotification()
+
+const deleteModal = ref({
+  isOpen: false,
+  project: null as Project | null
+})
 
 const filteredProjects = computed(() => {
   let filtered = projects.value
@@ -155,13 +126,6 @@ const filteredProjects = computed(() => {
 
   return filtered
 })
-
-const deleteModal = ref({
-  isOpen: false,
-  project: null as Project | null
-})
-
-const { success, error } = useNotification()
 
 const createProject = () => {
   navigateTo('/projects/new')
@@ -190,12 +154,25 @@ const handleDelete = (project: Project) => {
   deleteModal.value.isOpen = true
 }
 
-const confirmDelete = () => {
+const confirmDelete = async () => {
   if (deleteModal.value.project) {
-    projects.value = projects.value.filter(p => p.id !== deleteModal.value.project!.id)
-    success('Project deleted', `${deleteModal.value.project.name} has been deleted`)
+    try {
+      await deleteProject(deleteModal.value.project.id)
+      success('Project deleted', `${deleteModal.value.project.name} has been deleted`)
+    } catch (e: any) {
+      error('Failed to delete project', e.message)
+    }
   }
   deleteModal.value.isOpen = false
   deleteModal.value.project = null
 }
+
+// Fetch projects on mount
+onMounted(async () => {
+  try {
+    await fetchProjects()
+  } catch (e: any) {
+    error('Failed to load projects', e.message)
+  }
+})
 </script>

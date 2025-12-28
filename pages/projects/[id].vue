@@ -1,6 +1,12 @@
 <template>
   <div>
-    <div class="mb-8">
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center py-12">
+      <LoadingSpinner size="lg" />
+    </div>
+
+    <div v-else-if="project">
+      <div class="mb-8">
       <NuxtLink
         to="/projects"
         class="inline-flex items-center gap-2 text-sm text-slate-300 hover:text-white mb-4 transition-colors"
@@ -127,6 +133,16 @@
         </div>
       </template>
     </Tabs>
+    </div>
+
+    <!-- Error State -->
+    <div v-else>
+      <EmptyState
+        :icon="FolderGit2"
+        title="Project not found"
+        description="The project you're looking for doesn't exist or you don't have access to it."
+      />
+    </div>
   </div>
 </template>
 
@@ -143,16 +159,12 @@ definePageMeta({
 const route = useRoute()
 const projectId = route.params.id as string
 
-const project = ref<Project>({
-  id: projectId,
-  name: 'my-web-app',
-  slug: 'my-web-app',
-  description: 'A modern web application built with Nuxt 3',
-  repository_url: 'https://github.com/user/my-web-app',
-  status: 'active',
-  created_at: new Date(Date.now() - 86400000 * 30).toISOString(),
-  updated_at: new Date(Date.now() - 3600000).toISOString()
-})
+const { getProject } = useProjects()
+const { deployments, loading: deploymentsLoading, createDeployment, fetchDeployments } = useDeployments()
+const { success, error } = useNotification()
+
+const project = ref<Project | null>(null)
+const loading = ref(true)
 
 const tabs = [
   { label: 'Deployments', icon: Rocket },
@@ -161,45 +173,17 @@ const tabs = [
 ]
 
 const deploymentColumns = [
-  { key: 'commit_hash', label: 'Commit' },
+  { key: 'commitSha', label: 'Commit' },
   { key: 'status', label: 'Status' },
-  { key: 'commit_message', label: 'Message' },
-  { key: 'created_at', label: 'Date' },
+  { key: 'commitMsg', label: 'Message' },
+  { key: 'createdAt', label: 'Date' },
   { key: 'actions', label: '' }
 ]
-
-const deployments = ref<Deployment[]>([
-  {
-    id: '1',
-    project_id: projectId,
-    status: 'success',
-    commit_hash: 'a1b2c3d',
-    commit_message: 'Fix login bug',
-    deployed_url: 'https://my-app.example.com',
-    created_at: new Date(Date.now() - 300000).toISOString()
-  },
-  {
-    id: '2',
-    project_id: projectId,
-    status: 'success',
-    commit_hash: 'e4f5g6h',
-    commit_message: 'Add authentication',
-    deployed_url: 'https://my-app.example.com',
-    created_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: '3',
-    project_id: projectId,
-    status: 'failed',
-    commit_hash: 'i7j8k9l',
-    commit_message: 'Update dependencies',
-    created_at: new Date(Date.now() - 86400000 * 2).toISOString()
-  }
-])
 
 const latestDeployment = computed(() => deployments.value[0])
 
 const statusVariant = computed(() => {
+  if (!project.value) return 'default'
   const variants: Record<string, any> = {
     active: 'success',
     paused: 'warning',
@@ -222,9 +206,24 @@ const handleTabChange = (index: number) => {
   console.log('Tab changed to:', index)
 }
 
-const handleDeploy = () => {
-  const { success } = useNotification()
-  success('Deployment started', 'Your project is being deployed...')
+const handleDeploy = async () => {
+  if (!project.value) return
+  
+  try {
+    // Create a new deployment with mock data for now
+    await createDeployment({
+      projectId: project.value.id,
+      commitSha: Math.random().toString(36).substring(7),
+      commitMsg: 'Manual deployment',
+      branch: 'main'
+    })
+    success('Deployment started', 'Your project is being deployed...')
+    
+    // Refresh deployments
+    await fetchDeployments(project.value.id)
+  } catch (e: any) {
+    error('Deployment failed', e.message)
+  }
 }
 
 const handleSettings = () => {
@@ -234,4 +233,17 @@ const handleSettings = () => {
 const viewDeployment = (deployment: Deployment) => {
   navigateTo(`/projects/${projectId}/deployments/${deployment.id}`)
 }
+
+// Fetch project and deployments on mount
+onMounted(async () => {
+  try {
+    const data = await getProject(projectId)
+    project.value = data
+    await fetchDeployments(projectId)
+  } catch (e: any) {
+    error('Failed to load project', e.message)
+  } finally {
+    loading.value = false
+  }
+})
 </script>

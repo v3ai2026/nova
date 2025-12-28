@@ -1,31 +1,33 @@
 export interface User {
   id: string
   email: string
-  full_name?: string
-  avatar_url?: string
-  created_at: string
+  name?: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Project {
   id: string
   name: string
   slug: string
-  description?: string
-  repository_url?: string
+  description?: string | null
+  repositoryUrl?: string | null
   status: 'active' | 'paused' | 'error'
-  created_at: string
-  updated_at: string
+  userId: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Deployment {
   id: string
-  project_id: string
+  projectId: string
+  branch: string
+  commitSha: string
+  commitMsg?: string | null
   status: 'pending' | 'building' | 'success' | 'failed'
-  commit_hash?: string
-  commit_message?: string
-  deployed_url?: string
-  created_at: string
-  completed_at?: string
+  url?: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Organization {
