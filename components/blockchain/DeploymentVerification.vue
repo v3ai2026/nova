@@ -39,7 +39,7 @@
           <div class="flex justify-between">
             <span class="text-slate-600 dark:text-slate-400">Commit:</span>
             <code class="text-xs font-mono text-slate-900 dark:text-white">
-              {{ deployment.commitHash || 'N/A' }}
+              {{ deployment.commit_hash || 'N/A' }}
             </code>
           </div>
           <div class="flex justify-between">
@@ -156,7 +156,7 @@ const handleRecordDeployment = async () => {
   if (!props.deployment) return
 
   // Create data hash from deployment info
-  const dataString = `${props.deployment.id}${props.deployment.commitHash}${props.deployment.status}`
+  const dataString = `${props.deployment.id}${props.deployment.commit_hash}${props.deployment.status}`
   const dataHash = `0x${Buffer.from(dataString).toString('hex')}`
 
   const record = await recordDeployment(

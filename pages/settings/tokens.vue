@@ -38,10 +38,10 @@
             </p>
             <div class="flex items-center gap-3 mt-2 text-xs text-slate-500 dark:text-slate-400">
               <span>Created {{ formatDate(token.created_at) }}</span>
-              <span v-if="token.last_used_at">Last used {{ formatDate(token.last_used_at) }}</span>
+              <span v-if="token.lastUsedAt">Last used {{ formatDate(token.lastUsedAt) }}</span>
               <span v-else>Never used</span>
-              <span v-if="token.expires_at" class="text-yellow-600 dark:text-yellow-400">
-                Expires {{ formatDate(token.expires_at) }}
+              <span v-if="token.expiresAt" class="text-yellow-600 dark:text-yellow-400">
+                Expires {{ formatDate(token.expiresAt) }}
               </span>
             </div>
           </div>

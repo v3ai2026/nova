@@ -11,6 +11,12 @@ export interface ChainRecord {
   dataHash: string
   verified: boolean
   created_at: string
+  deployment?: {
+    id: string
+    status: string
+    commitHash: string
+    commitMessage?: string
+  }
 }
 
 export const useBlockchain = () => {

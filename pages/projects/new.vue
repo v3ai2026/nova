@@ -143,7 +143,7 @@ const handleSubmit = async () => {
   const project = await createProject({
     name: form.value.name,
     description: form.value.description,
-    repositoryUrl: form.value.repositoryUrl,
+    repository_url: form.value.repositoryUrl,
     slug: form.value.slug,
     userId: user.value.id
   })

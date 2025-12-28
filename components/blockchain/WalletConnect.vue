@@ -62,7 +62,7 @@
           <div class="flex justify-between">
             <span class="text-slate-600 dark:text-slate-400">Network:</span>
             <span class="text-slate-900 dark:text-white">
-              {{ getNetworkName(chainId) }}
+              {{ chainId ? getNetworkName(chainId) : 'Unknown' }}
             </span>
           </div>
         </div>
