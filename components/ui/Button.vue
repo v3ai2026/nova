@@ -16,7 +16,7 @@
 import { Loader2 } from 'lucide-vue-next'
 
 interface Props {
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'ghost' | 'outline'
   size?: 'sm' | 'md' | 'lg'
   type?: 'button' | 'submit' | 'reset'
   disabled?: boolean
@@ -61,7 +61,8 @@ const buttonClasses = computed(() => {
     secondary: 'bg-slate-600 text-white hover:bg-slate-700 focus:ring-slate-500',
     success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-    ghost: 'bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:ring-slate-500'
+    ghost: 'bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 focus:ring-slate-500',
+    outline: 'border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 focus:ring-slate-500'
   }
   
   const width = props.fullWidth ? 'w-full' : ''
