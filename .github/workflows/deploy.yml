@@ -12,6 +12,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+      - name: Clean npm cache and dependencies
+        run: |
+          rm -rf node_modules package-lock.json
+          npm cache clean --force
       - run: npm install
       - run: npm run build
       - run: npm run generate
